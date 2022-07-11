@@ -1,55 +1,56 @@
-from commitizen.cz.base import BaseCommitizen
+import os
+import re
+from collections import OrderedDict
+from commitizen import cmd, git
+from commitizen.config import BaseConfig
+from commitizen.cz import exceptions
+from commitizen.cz.conventional_commits import ConventionalCommitsCz
 from commitizen.defaults import Questions
+from commitizen import defaults
 
-class CzIntegeratedJira(BaseCommitizen):
-    # Questions = Iterable[MutableMapping[str, Any]]
-    # It expects a list with dictionaries.
+
+class CzIntegeratedJira(ConventionalCommitsCz):
+    def __init__(self, config: BaseConfig):
+        super().__init__(config)
+
+    bump_pattern = defaults.bump_pattern
+    bump_map = defaults.bump_map
+    commit_parser = defaults.commit_parser
+    change_type_order = ["BREAKING CHANGE",
+                         "feat", "fix", "refactor", "perf", "build"]
+
+    version_parser = defaults.version_parser
+    change_type_map = {
+        "feat": "Features",
+        "fix": "Bug Fixes",
+        "refactor": "Code Refactor",
+        "perf": "Performance improvements",
+        "build": "Build"
+    }
+
     def questions(self) -> Questions:
-        """Questions regarding the commit message."""
-        questions = [
-            {
-                'type': 'input',
-                'name': 'title',
-                'message': 'Commit title'
-            },
-            {
-                'type': 'input',
-                'name': 'issue',
-                'message': 'Jira Issue number:'
-            },
-        ]
+        questions = super().questions()
+
         return questions
 
     def message(self, answers: dict) -> str:
-        """Generate the message with the given answers."""
-        return '{0} (#{1})'.format(answers['title'], answers['issue'])
+        message = super().message(answers)
+        return message
 
     def example(self) -> str:
-        """Provide an example to help understand the style (OPTIONAL)
-
-        Used by `cz example`.
-        """
-        return 'Problem with user (#321)'
+        return (
+            "fix: correct minor typos in code\n\n"
+            "Jira-ref: SPACE-1122"
+        )
 
     def schema(self) -> str:
-        """Show the schema used (OPTIONAL)
-
-        Used by `cz schema`.
-        """
         return (
             "<type>(<scope>): <subject>\n"
             "<BLANK LINE>\n"
             "<body>\n"
             "<BLANK LINE>\n"
-            "<footer>(Jira-ref: <issue-id>)"
+            "<footer>(Jira-ref: #<issue-id>)"
         )
-
-    def info(self) -> str:
-        """Explanation of the commit rules. (OPTIONAL)
-
-        Used by `cz info`.
-        """
-        return 'We use this because is useful'
 
 
 discover_this = CzIntegeratedJira  # used by the plug-in system
