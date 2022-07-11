@@ -36,7 +36,13 @@ class CzIntegeratedJira(BaseCommitizen):
 
         Used by `cz schema`.
         """
-        return '<title> (<issue>)'
+        return (
+            "<type>(<scope>): <subject>\n"
+            "<BLANK LINE>\n"
+            "<body>\n"
+            "<BLANK LINE>\n"
+            "<footer>(Jira-ref: <issue-id>)"
+        )
 
     def info(self) -> str:
         """Explanation of the commit rules. (OPTIONAL)
